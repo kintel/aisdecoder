@@ -20,4 +20,24 @@ void gpsd_report(const int debuglevel, const int errlevel, const char *fmt, ...)
 extern /*@ observer @*/ const char *gpsd_hexdump(/*@out@*/char *, size_t,
 						 /*@null@*/char *, size_t);
 
+/* Some libcs do not have strlcat/strlcpy. Local copies are provided */
+#ifndef HAVE_STRLCAT
+# ifdef __cplusplus
+extern "C" {
+# endif
+size_t strlcat(/*@out@*/char *dst, /*@in@*/const char *src, size_t size);
+# ifdef __cplusplus
+}
+# endif
+#endif
+#ifndef HAVE_STRLCPY
+# ifdef __cplusplus
+extern "C" {
+# endif
+size_t strlcpy(/*@out@*/char *dst, /*@in@*/const char *src, size_t size);
+# ifdef __cplusplus
+}
+# endif
+#endif
+
 #endif
