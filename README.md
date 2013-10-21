@@ -1,5 +1,6 @@
 aisdecoder
 ==========
+[![Build Status](https://travis-ci.org/kintel/aisdecoder.png)](https://travis-ci.org/kintel/aisdecoder)
 
 AIS decoder module for node.js
 
