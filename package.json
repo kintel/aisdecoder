@@ -1,7 +1,12 @@
 {
+  "author": "Marius Kintel",
   "name": "aisdecoder",
+  "description": "Decoder AIS messages to Javascript objects",
   "version": "0.0.1",
-  "private": true,
+  "repository:" {
+    "type": "git",
+    "url": "https://github.com/kintel/aisdecoder.git"
+  },
   "main": "build/Release/aisdecoder.node",
   "scripts": {
     "test": "mocha --reporter spec"
@@ -9,5 +14,8 @@
   "dependencies": {},
   "devDependencies": {
     "should": "~2.0.2"
+  },
+  "engines": {
+    "node": "*"
   }
 }
