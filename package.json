@@ -1,9 +1,9 @@
 {
-  "author": "Marius Kintel",
   "name": "aisdecoder",
-  "description": "Decoder AIS messages to Javascript objects",
+  "description": "Decode AIS messages to Javascript objects",
   "version": "0.0.1",
-  "repository:" {
+  "author": "Marius Kintel",
+  "repository": {
     "type": "git",
     "url": "https://github.com/kintel/aisdecoder.git"
   },
