@@ -16,7 +16,5 @@
     "should": "2.x",
     "mocha": "1.x"
   },
-  "engines": {
-    "node": "*"
-  }
+"engine": "node >= 0.12.0"
 }
