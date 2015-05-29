@@ -1,10 +1,12 @@
 #include <node.h>
+#include <node_object_wrap.h>
 #include <v8.h>
 
 
 #include "aisdecoder.h"
 
 using namespace v8;
+using namespace node;
 
 static const char *ais_typestring(unsigned int type)
 {
@@ -38,24 +40,25 @@ static const char *ais_typestring(unsigned int type)
 Handle<Object> convertToJS(ais_t *ais)
 {
   // Create AIS object
-  Handle<Object> aisobj = Object::New();
-  aisobj->Set(String::New("type"), String::New(ais_typestring(ais->type)));
-  aisobj->Set(String::New("mmsi"), Number::New(ais->mmsi));
-  aisobj->Set(String::New("repeat"), Number::New(ais->repeat));
+  Isolate* isolate = Isolate::GetCurrent();
+  Handle<Object> aisobj = Object::New(isolate);
+  aisobj->Set(String::NewFromUtf8(isolate, "type"), String::NewFromUtf8(isolate, ais_typestring(ais->type)));
+  aisobj->Set(String::NewFromUtf8(isolate, "mmsi"), Number::New(isolate, ais->mmsi));
+  aisobj->Set(String::NewFromUtf8(isolate, "repeat"), Number::New(isolate, ais->repeat));
   switch (ais->type) {
   case 1:			/* Position Report */
   case 2:
   case 3:
-    aisobj->Set(String::New("status"), Number::New(ais->type1.status));
-    aisobj->Set(String::New("lon"), Number::New(ais->type1.lon / AIS_LATLON_DIV));
-    aisobj->Set(String::New("lat"), Number::New(ais->type1.lat / AIS_LATLON_DIV));
-    aisobj->Set(String::New("course"), Number::New(ais->type1.course / 10.0));
-    aisobj->Set(String::New("heading"), Number::New(ais->type1.heading));
-    aisobj->Set(String::New("accuracy"), Boolean::New(ais->type1.accuracy));
-    aisobj->Set(String::New("second"), Number::New(ais->type1.second));
-    aisobj->Set(String::New("maneuver"), Number::New(ais->type1.maneuver));
-    aisobj->Set(String::New("raim"), Boolean::New(ais->type1.raim));
-    aisobj->Set(String::New("radio"), Number::New(ais->type1.radio));
+    aisobj->Set(String::NewFromUtf8(isolate, "status"), Number::New(isolate, ais->type1.status));
+    aisobj->Set(String::NewFromUtf8(isolate, "lon"), Number::New(isolate, ais->type1.lon / AIS_LATLON_DIV));
+    aisobj->Set(String::NewFromUtf8(isolate, "lat"), Number::New(isolate, ais->type1.lat / AIS_LATLON_DIV));
+    aisobj->Set(String::NewFromUtf8(isolate, "course"), Number::New(isolate, ais->type1.course / 10.0));
+    aisobj->Set(String::NewFromUtf8(isolate, "heading"), Number::New(isolate, ais->type1.heading));
+    aisobj->Set(String::NewFromUtf8(isolate, "accuracy"), Boolean::New(isolate, ais->type1.accuracy));
+    aisobj->Set(String::NewFromUtf8(isolate, "second"), Number::New(isolate, ais->type1.second));
+    aisobj->Set(String::NewFromUtf8(isolate, "maneuver"), Number::New(isolate, ais->type1.maneuver));
+    aisobj->Set(String::NewFromUtf8(isolate, "raim"), Boolean::New(isolate, ais->type1.raim));
+    aisobj->Set(String::NewFromUtf8(isolate, "radio"), Number::New(isolate, ais->type1.radio));
 
     /*
       \"status_text\":\"%s\","
@@ -70,16 +73,16 @@ Handle<Object> convertToJS(ais_t *ais)
       Handle<Value> speedval;
       switch (ais->type1.speed) {
       case AIS_SPEED_NOT_AVAILABLE:
-        speedval = String::New("nan");
+        speedval = String::NewFromUtf8(isolate, "nan");
         break;
       case AIS_SPEED_FAST_MOVER:
-        speedval = String::New("fast");
+        speedval = String::NewFromUtf8(isolate, "fast");
         break;
       default:
-        speedval = Number::New(ais->type1.speed / 10.0);
+        speedval = Number::New(isolate, ais->type1.speed / 10.0);
         break;
       }
-      aisobj->Set(String::New("speed"), speedval);
+      aisobj->Set(String::NewFromUtf8(isolate, "speed"), speedval);
     }
 
     /*
@@ -90,29 +93,29 @@ Handle<Object> convertToJS(ais_t *ais)
       Handle<Value> turnval;
       switch (ais->type1.turn) {
       case -128:
-        turnval = String::New("nan");
+        turnval = String::NewFromUtf8(isolate, "nan");
         break;
       case -127:
-        turnval = String::New("fastleft");
+        turnval = String::NewFromUtf8(isolate, "fastleft");
         break;
       case 127:
-        turnval = String::New("fastright");
+        turnval = String::NewFromUtf8(isolate, "fastright");
         break;
       default:
         double rot1 = ais->type1.turn / 4.733;
-        turnval = Number::New(rot1 * rot1);
+        turnval = Number::New(isolate, rot1 * rot1);
       }
-      aisobj->Set(String::New("turn"), turnval);
+      aisobj->Set(String::NewFromUtf8(isolate, "turn"), turnval);
     }
 
     break;
   case 4:			/* Base Station Report */
   case 11:			/* UTC/Date Response */
     /* some fields have been merged to an ISO8601 date */
-    aisobj->Set(String::New("lon"), Number::New(ais->type4.lon / AIS_LATLON_DIV));
-    aisobj->Set(String::New("lat"), Number::New(ais->type4.lat / AIS_LATLON_DIV));
+    aisobj->Set(String::NewFromUtf8(isolate, "lon"), Number::New(isolate, ais->type4.lon / AIS_LATLON_DIV));
+    aisobj->Set(String::NewFromUtf8(isolate, "lat"), Number::New(isolate, ais->type4.lat / AIS_LATLON_DIV));
     /*
-      aisobj->Set(String::New("timestamp"), );
+      aisobj->Set(String::NewFromUtf8(isolate, "timestamp"), );
       ais->type4.year,
       ais->type4.month,
       ais->type4.day,
@@ -120,31 +123,31 @@ Handle<Object> convertToJS(ais_t *ais)
       ais->type4.minute,
       ais->type4.second,
     */
-    aisobj->Set(String::New("accuracy"), Boolean::New(ais->type4.accuracy));
-    aisobj->Set(String::New("raim"), Boolean::New(ais->type4.raim));
-    aisobj->Set(String::New("radio"), Number::New(ais->type4.radio));
-    aisobj->Set(String::New("epfd"), Number::New(ais->type4.epfd));
+    aisobj->Set(String::NewFromUtf8(isolate, "accuracy"), Boolean::New(isolate, ais->type4.accuracy));
+    aisobj->Set(String::NewFromUtf8(isolate, "raim"), Boolean::New(isolate, ais->type4.raim));
+    aisobj->Set(String::NewFromUtf8(isolate, "radio"), Number::New(isolate, ais->type4.radio));
+    aisobj->Set(String::NewFromUtf8(isolate, "epfd"), Number::New(isolate, ais->type4.epfd));
     /*
       \"epfd_text\":\"%s\","
       EPFD_DISPLAY(ais->type4.epfd),
-    */
+    *
     break;
-  case 5:			/* Ship static and voyage related data */
+  case 5:			// Ship static and voyage related data */
     /* some fields have been merged to an ISO8601 partial date */
-    aisobj->Set(String::New("imo"), Number::New(ais->type5.imo));
-    aisobj->Set(String::New("callsign"), String::New(ais->type5.callsign));
-    aisobj->Set(String::New("shipname"), String::New(ais->type5.shipname));
-    aisobj->Set(String::New("shiptype"), Number::New(ais->type5.shiptype));
-    aisobj->Set(String::New("destination"), String::New(ais->type5.destination));
+    aisobj->Set(String::NewFromUtf8(isolate, "imo"), Number::New(isolate, ais->type5.imo));
+    aisobj->Set(String::NewFromUtf8(isolate, "callsign"), String::NewFromUtf8(isolate, ais->type5.callsign));
+    aisobj->Set(String::NewFromUtf8(isolate, "shipname"), String::NewFromUtf8(isolate, ais->type5.shipname));
+    aisobj->Set(String::NewFromUtf8(isolate, "shiptype"), Number::New(isolate, ais->type5.shiptype));
+    aisobj->Set(String::NewFromUtf8(isolate, "destination"), String::NewFromUtf8(isolate, ais->type5.destination));
 
-    aisobj->Set(String::New("ais_version"), Number::New(ais->type5.ais_version));
-    aisobj->Set(String::New("to_bow"), Number::New(ais->type5.to_bow));
-    aisobj->Set(String::New("to_stern"), Number::New(ais->type5.to_stern));
-    aisobj->Set(String::New("to_port"), Number::New(ais->type5.to_port));
-    aisobj->Set(String::New("to_starboard"), Number::New(ais->type5.to_starboard));
-    aisobj->Set(String::New("epfd"), Number::New(ais->type5.epfd));
-    aisobj->Set(String::New("draught"), Number::New(ais->type5.draught / 10.0));
-    aisobj->Set(String::New("dte"), Number::New(ais->type5.dte));
+    aisobj->Set(String::NewFromUtf8(isolate, "ais_version"), Number::New(isolate, ais->type5.ais_version));
+    aisobj->Set(String::NewFromUtf8(isolate, "to_bow"), Number::New(isolate, ais->type5.to_bow));
+    aisobj->Set(String::NewFromUtf8(isolate, "to_stern"), Number::New(isolate, ais->type5.to_stern));
+    aisobj->Set(String::NewFromUtf8(isolate, "to_port"), Number::New(isolate, ais->type5.to_port));
+    aisobj->Set(String::NewFromUtf8(isolate, "to_starboard"), Number::New(isolate, ais->type5.to_starboard));
+    aisobj->Set(String::NewFromUtf8(isolate, "epfd"), Number::New(isolate, ais->type5.epfd));
+    aisobj->Set(String::NewFromUtf8(isolate, "draught"), Number::New(isolate, ais->type5.draught / 10.0));
+    aisobj->Set(String::NewFromUtf8(isolate, "dte"), Number::New(isolate, ais->type5.dte));
 
     /*
       \"shiptype_text\":\"%s\","
@@ -159,48 +162,48 @@ Handle<Object> convertToJS(ais_t *ais)
     */
     break;
     case 18:
-    aisobj->Set(String::New("lon"), Number::New(ais->type18.lon / AIS_LATLON_DIV));
-    aisobj->Set(String::New("lat"), Number::New(ais->type18.lat / AIS_LATLON_DIV));
-    aisobj->Set(String::New("course"), Number::New(ais->type18.course / 10.0));
+    aisobj->Set(String::NewFromUtf8(isolate, "lon"), Number::New(isolate, ais->type18.lon / AIS_LATLON_DIV));
+    aisobj->Set(String::NewFromUtf8(isolate, "lat"), Number::New(isolate, ais->type18.lat / AIS_LATLON_DIV));
+    aisobj->Set(String::NewFromUtf8(isolate, "course"), Number::New(isolate, ais->type18.course / 10.0));
     if (ais->type18.heading != 511) {
-      aisobj->Set(String::New("heading"), Number::New(ais->type18.heading));
+      aisobj->Set(String::NewFromUtf8(isolate, "heading"), Number::New(isolate, ais->type18.heading));
     }
-    aisobj->Set(String::New("speed"), Number::New(ais->type18.speed / 10.0));
-    aisobj->Set(String::New("accuracy"), Boolean::New(ais->type18.accuracy));
-    //    aisobj->Set(String::New("reserved"), Number::New(ais->type18.reserved));
-    aisobj->Set(String::New("regional"), Number::New(ais->type18.regional));
-    aisobj->Set(String::New("cs"), Boolean::New(ais->type18.cs));
-    aisobj->Set(String::New("display"), Boolean::New(ais->type18.display));
-    aisobj->Set(String::New("dsc"), Boolean::New(ais->type18.dsc));
-    aisobj->Set(String::New("band"), Boolean::New(ais->type18.band));
-    aisobj->Set(String::New("msg22"), Boolean::New(ais->type18.msg22));
-    aisobj->Set(String::New("raim"), Boolean::New(ais->type18.raim));
-    aisobj->Set(String::New("radio"), Number::New(ais->type18.radio));
-    aisobj->Set(String::New("assigned"), Number::New(ais->type18.assigned));
-    aisobj->Set(String::New("second"), Number::New(ais->type18.second));
+    aisobj->Set(String::NewFromUtf8(isolate, "speed"), Number::New(isolate, ais->type18.speed / 10.0));
+    aisobj->Set(String::NewFromUtf8(isolate, "accuracy"), Boolean::New(isolate, ais->type18.accuracy));
+    //    aisobj->Set(String::NewFromUtf8(isolate, "reserved"), Number::New(isolate, ais->type18.reserved));
+    aisobj->Set(String::NewFromUtf8(isolate, "regional"), Number::New(isolate, ais->type18.regional));
+    aisobj->Set(String::NewFromUtf8(isolate, "cs"), Boolean::New(isolate, ais->type18.cs));
+    aisobj->Set(String::NewFromUtf8(isolate, "display"), Boolean::New(isolate, ais->type18.display));
+    aisobj->Set(String::NewFromUtf8(isolate, "dsc"), Boolean::New(isolate, ais->type18.dsc));
+    aisobj->Set(String::NewFromUtf8(isolate, "band"), Boolean::New(isolate, ais->type18.band));
+    aisobj->Set(String::NewFromUtf8(isolate, "msg22"), Boolean::New(isolate, ais->type18.msg22));
+    aisobj->Set(String::NewFromUtf8(isolate, "raim"), Boolean::New(isolate, ais->type18.raim));
+    aisobj->Set(String::NewFromUtf8(isolate, "radio"), Number::New(isolate, ais->type18.radio));
+    aisobj->Set(String::NewFromUtf8(isolate, "assigned"), Number::New(isolate, ais->type18.assigned));
+    aisobj->Set(String::NewFromUtf8(isolate, "second"), Number::New(isolate, ais->type18.second));
     break;
     case 19:
-    aisobj->Set(String::New("lon"), Number::New(ais->type19.lon / AIS_LATLON_DIV));
-    aisobj->Set(String::New("lat"), Number::New(ais->type19.lat / AIS_LATLON_DIV));
-    aisobj->Set(String::New("course"), Number::New(ais->type19.course / 10.0));
+    aisobj->Set(String::NewFromUtf8(isolate, "lon"), Number::New(isolate, ais->type19.lon / AIS_LATLON_DIV));
+    aisobj->Set(String::NewFromUtf8(isolate, "lat"), Number::New(isolate, ais->type19.lat / AIS_LATLON_DIV));
+    aisobj->Set(String::NewFromUtf8(isolate, "course"), Number::New(isolate, ais->type19.course / 10.0));
     if (ais->type19.heading != 511) {
-      aisobj->Set(String::New("heading"), Number::New(ais->type19.heading));
+      aisobj->Set(String::NewFromUtf8(isolate, "heading"), Number::New(isolate, ais->type19.heading));
     }
-    aisobj->Set(String::New("speed"), Number::New(ais->type19.speed / 10.0));
-    aisobj->Set(String::New("accuracy"), Boolean::New(ais->type19.accuracy));
-    //    aisobj->Set(String::New("reserved"), Number::New(ais->type19.reserved));
-    aisobj->Set(String::New("regional"), Number::New(ais->type19.regional));
-    aisobj->Set(String::New("second"), Number::New(ais->type19.second));
-    aisobj->Set(String::New("shipname"), String::New(ais->type19.shipname));
-    aisobj->Set(String::New("shiptype"), Number::New(ais->type19.shiptype));
-    aisobj->Set(String::New("to_bow"), Number::New(ais->type19.to_bow));
-    aisobj->Set(String::New("to_stern"), Number::New(ais->type19.to_stern));
-    aisobj->Set(String::New("to_port"), Number::New(ais->type19.to_port));
-    aisobj->Set(String::New("to_starboard"), Number::New(ais->type19.to_starboard));
-    aisobj->Set(String::New("epfd"), Number::New(ais->type19.epfd));
-    aisobj->Set(String::New("raim"), Boolean::New(ais->type19.raim));
-    aisobj->Set(String::New("dte"), Number::New(ais->type19.dte));
-    aisobj->Set(String::New("assigned"), Boolean::New(ais->type19.assigned));
+    aisobj->Set(String::NewFromUtf8(isolate, "speed"), Number::New(isolate, ais->type19.speed / 10.0));
+    aisobj->Set(String::NewFromUtf8(isolate, "accuracy"), Boolean::New(isolate, ais->type19.accuracy));
+    //    aisobj->Set(String::NewFromUtf8(isolate, "reserved"), Number::New(isolate, ais->type19.reserved));
+    aisobj->Set(String::NewFromUtf8(isolate, "regional"), Number::New(isolate, ais->type19.regional));
+    aisobj->Set(String::NewFromUtf8(isolate, "second"), Number::New(isolate, ais->type19.second));
+    aisobj->Set(String::NewFromUtf8(isolate, "shipname"), String::NewFromUtf8(isolate, ais->type19.shipname));
+    aisobj->Set(String::NewFromUtf8(isolate, "shiptype"), Number::New(isolate, ais->type19.shiptype));
+    aisobj->Set(String::NewFromUtf8(isolate, "to_bow"), Number::New(isolate, ais->type19.to_bow));
+    aisobj->Set(String::NewFromUtf8(isolate, "to_stern"), Number::New(isolate, ais->type19.to_stern));
+    aisobj->Set(String::NewFromUtf8(isolate, "to_port"), Number::New(isolate, ais->type19.to_port));
+    aisobj->Set(String::NewFromUtf8(isolate, "to_starboard"), Number::New(isolate, ais->type19.to_starboard));
+    aisobj->Set(String::NewFromUtf8(isolate, "epfd"), Number::New(isolate, ais->type19.epfd));
+    aisobj->Set(String::NewFromUtf8(isolate, "raim"), Boolean::New(isolate, ais->type19.raim));
+    aisobj->Set(String::NewFromUtf8(isolate, "dte"), Number::New(isolate, ais->type19.dte));
+    aisobj->Set(String::NewFromUtf8(isolate, "assigned"), Boolean::New(isolate, ais->type19.assigned));
 
     /*\"shiptype_text\":\"%s\","
 \"epfd_text\":\"%s\","
@@ -209,14 +212,14 @@ Handle<Object> convertToJS(ais_t *ais)
     */
     break;
   case 27:
-    aisobj->Set(String::New("lon"), Number::New(ais->type27.lon / AIS_LONGRANGE_LATLON_DIV));
-    aisobj->Set(String::New("lat"), Number::New(ais->type27.lat / AIS_LONGRANGE_LATLON_DIV));
-    aisobj->Set(String::New("course"), Number::New(ais->type27.course));
-    aisobj->Set(String::New("speed"), Number::New(ais->type27.speed));
-    aisobj->Set(String::New("accuracy"), Boolean::New(ais->type27.accuracy));
-    aisobj->Set(String::New("raim"), Boolean::New(ais->type27.raim));
-    aisobj->Set(String::New("gnss"), Boolean::New(ais->type27.gnss));
-    aisobj->Set(String::New("status"), Number::New(ais->type27.status));
+    aisobj->Set(String::NewFromUtf8(isolate, "lon"), Number::New(isolate, ais->type27.lon / AIS_LONGRANGE_LATLON_DIV));
+    aisobj->Set(String::NewFromUtf8(isolate, "lat"), Number::New(isolate, ais->type27.lat / AIS_LONGRANGE_LATLON_DIV));
+    aisobj->Set(String::NewFromUtf8(isolate, "course"), Number::New(isolate, ais->type27.course));
+    aisobj->Set(String::NewFromUtf8(isolate, "speed"), Number::New(isolate, ais->type27.speed));
+    aisobj->Set(String::NewFromUtf8(isolate, "accuracy"), Boolean::New(isolate, ais->type27.accuracy));
+    aisobj->Set(String::NewFromUtf8(isolate, "raim"), Boolean::New(isolate, ais->type27.raim));
+    aisobj->Set(String::NewFromUtf8(isolate, "gnss"), Boolean::New(isolate, ais->type27.gnss));
+    aisobj->Set(String::NewFromUtf8(isolate, "status"), Number::New(isolate, ais->type27.status));
     /*
 			   "\"status\":\"%s\","
 			   nav_legends[ais->type27.status],
@@ -233,18 +236,15 @@ class AisDecoder : public node::ObjectWrap
 {
 public:
   static void Init(Handle<Object> exports) { 
+    Isolate* isolate = Isolate::GetCurrent();
     // Prepare constructor template
-    Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
-    tpl->SetClassName(String::NewSymbol("AisDecoder"));
+    Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate, New);
+    tpl->SetClassName(String::NewFromUtf8(isolate, "AisDecoder"));
     tpl->InstanceTemplate()->SetInternalFieldCount(1);
     // Prototype
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("decode"),
-                                  FunctionTemplate::New(decode)->GetFunction());
-
-    Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
-
-    // FIXME: Return the constructor directly to exports instead
-    exports->Set(String::NewSymbol("AisDecoder"), constructor);   
+    NODE_SET_PROTOTYPE_METHOD(tpl, "decode", decode);
+    exports->Set(String::NewFromUtf8(isolate, "AisDecoder"),
+               tpl->GetFunction());
   }
 private:
   ais_handle_t *ais_handle;
@@ -256,36 +256,34 @@ private:
     ais_destroy_handle(this->ais_handle);
   }
 
-  static Handle<Value> New(const Arguments& args) {
-    HandleScope scope;
-    
-    AisDecoder *decoder = new AisDecoder();
-    decoder->Wrap(args.This());
-    
-    return args.This();
+
+  static void New(const FunctionCallbackInfo<Value>& info) {
+      AisDecoder *decoder = new AisDecoder();
+      decoder->Wrap(info.This());
+      info.GetReturnValue().Set(info.This());
   }
 
-  static Handle<Value> decode(const Arguments& args) {
-    HandleScope scope;
-    
-    AisDecoder *thisp = ObjectWrap::Unwrap<AisDecoder>(args.This());
-
-    String::AsciiValue ascii(args[0]->ToString());
+  static void decode(const FunctionCallbackInfo<Value>& info) {    
+    AisDecoder *thisp = ObjectWrap::Unwrap<AisDecoder>(info.This());
+    Local<String> op = info[0]->ToString();
+    const int length = op->Utf8Length() + 1; 
+    uint8_t* buffer = new uint8_t[length];
+    op->WriteOneByte(buffer, 0, length);
     ais_t ais;
+
     bool ret = ais_decode(thisp->ais_handle, 
-                          *ascii, ascii.length(),
+                          (const char *) buffer, length,
                           &ais,
                           false, LOG_ERROR);
-
     Handle<Value> aisobj;
     if (ret) {
       aisobj = convertToJS(&ais);
     }
     else {
-      aisobj = Undefined();
+      aisobj = Undefined(info.GetIsolate());
     }
 
-    return scope.Close(aisobj);
+    info.GetReturnValue().Set(aisobj);
   }
 };
 
