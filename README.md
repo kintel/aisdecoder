@@ -1,9 +1,9 @@
+**Note: This project is no longer maintained**
+
 aisdecoder
 ==========
 [![Build Status](https://travis-ci.org/kintel/aisdecoder.png)](https://travis-ci.org/kintel/aisdecoder)
 [![NPM](https://nodei.co/npm/aisdecoder.png)](https://nodei.co/npm/aisdecoder/)
-
-Note: This project is no longer maintained
 
 AIS decoder module for node.js
 
